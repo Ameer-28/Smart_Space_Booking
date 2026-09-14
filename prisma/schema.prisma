@@ -1,0 +1,196 @@
+// This is your Prisma schema file
+// Smart Space Booking - UKK RPL 2026/2027
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────
+// APP MAKER (Multi-Tenancy per Siswa)
+// ─────────────────────────────────────────
+model AppMaker {
+  id         Int      @id @default(autoincrement())
+  name       String   @db.VarChar(100)
+  username   String   @unique @db.VarChar(50)
+  email      String   @unique @db.VarChar(100)
+  password   String   @db.VarChar(255)
+  app_key    String   @unique @db.VarChar(100)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relasi: semua data milik maker ini
+  users      User[]
+
+  @@map("app_makers")
+}
+
+// ─────────────────────────────────────────
+// USERS (autentikasi multi-role)
+// ─────────────────────────────────────────
+model User {
+  id         Int      @id @default(autoincrement())
+  username   String   @db.VarChar(50)
+  password   String   @db.VarChar(255)
+  role       Role     @default(member)
+  maker_id   Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  maker      AppMaker   @relation(fields: [maker_id], references: [id], onDelete: Cascade)
+  member     Member?
+  spaceOwner SpaceOwner?
+
+  @@unique([username, maker_id])
+  @@map("users")
+}
+
+enum Role {
+  member
+  admin_space
+}
+
+// ─────────────────────────────────────────
+// MEMBER / PELANGGAN
+// ─────────────────────────────────────────
+model Member {
+  id           Int      @id @default(autoincrement())
+  nama_member  String   @db.VarChar(100)
+  instansi     String   @db.VarChar(100)
+  alamat       String   @db.Text
+  telp         String   @db.VarChar(20)
+  foto         String?  @db.VarChar(255)
+  id_user      Int      @unique
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  user         User        @relation(fields: [id_user], references: [id], onDelete: Cascade)
+  reservasis   Reservasi[]
+
+  @@map("members")
+}
+
+// ─────────────────────────────────────────
+// SPACE OWNER / ADMIN PENGELOLA
+// ─────────────────────────────────────────
+model SpaceOwner {
+  id              Int      @id @default(autoincrement())
+  nama_coworking  String   @db.VarChar(100)
+  nama_pemilik    String   @db.VarChar(100)
+  telp            String   @db.VarChar(20)
+  alamat          String?  @db.Text
+  deskripsi       String?  @db.Text
+  id_user         Int      @unique
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  user            User      @relation(fields: [id_user], references: [id], onDelete: Cascade)
+  spaces          Space[]
+  reservasis      Reservasi[]
+
+  @@map("space_owners")
+}
+
+// ─────────────────────────────────────────
+// SPACE (Ruangan / Meja)
+// ─────────────────────────────────────────
+model Space {
+  id            Int       @id @default(autoincrement())
+  nama_space    String    @db.VarChar(100)
+  harga_per_jam Float
+  tipe          SpaceTipe
+  kapasitas     Int
+  foto          String?   @db.VarChar(255)
+  deskripsi     String?   @db.Text
+  id_owner      Int
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  owner            SpaceOwner       @relation(fields: [id_owner], references: [id], onDelete: Cascade)
+  detailReservasis DetailReservasi[]
+
+  @@map("spaces")
+}
+
+enum SpaceTipe {
+  desk
+  meeting_room
+  private_office
+}
+
+// ─────────────────────────────────────────
+// DISKON / PROMO
+// ─────────────────────────────────────────
+model Diskon {
+  id                Int      @id @default(autoincrement())
+  nama_diskon       String   @db.VarChar(100)
+  persentase_diskon Float
+  tanggal_awal      DateTime
+  tanggal_akhir     DateTime
+  id_owner          Int
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  detailReservasis  DetailReservasi[]
+
+  @@map("diskons")
+}
+
+// ─────────────────────────────────────────
+// RESERVASI (header transaksi)
+// ─────────────────────────────────────────
+model Reservasi {
+  id                 Int             @id @default(autoincrement())
+  kode_booking       String          @unique @db.VarChar(50)
+  tanggal_reservasi  DateTime        @db.Date
+  jam_mulai          String          @db.VarChar(5)
+  jam_selesai        String          @db.VarChar(5)
+  durasi_jam         Int
+  id_owner           Int
+  id_member          Int
+  status             ReservasiStatus @default(belum_dikonfirm)
+  check_in_time      DateTime?
+  check_out_time     DateTime?
+  created_at         DateTime        @default(now())
+  updated_at         DateTime        @updatedAt
+
+  owner          SpaceOwner      @relation(fields: [id_owner], references: [id])
+  member         Member          @relation(fields: [id_member], references: [id])
+  detail         DetailReservasi?
+
+  @@map("reservasis")
+}
+
+enum ReservasiStatus {
+  belum_dikonfirm
+  disetujui
+  aktif
+  selesai
+  dibatalkan
+}
+
+// ─────────────────────────────────────────
+// DETAIL RESERVASI (harga, space, diskon)
+// ─────────────────────────────────────────
+model DetailReservasi {
+  id                Int      @id @default(autoincrement())
+  id_reservasi      Int      @unique
+  id_space          Int
+  id_diskon         Int?
+  harga_per_jam     Float
+  total_harga_awal  Float
+  potongan_diskon   Float    @default(0)
+  total_bayar       Float
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  reservasi  Reservasi @relation(fields: [id_reservasi], references: [id], onDelete: Cascade)
+  space      Space     @relation(fields: [id_space], references: [id])
+  diskon     Diskon?   @relation(fields: [id_diskon], references: [id])
+
+  @@map("detail_reservasis")
+}

@@ -1,0 +1,24 @@
+# dependencies
+/node_modules
+
+# build
+/dist
+
+# env
+.env
+
+# logs
+*.log
+npm-debug.log*
+
+# uploads (optional - remove if you want to track uploads)
+/uploads/*
+!/uploads/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
