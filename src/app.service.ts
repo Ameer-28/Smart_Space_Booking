@@ -9,7 +9,7 @@ export class AppService {
       status: 'online',
       swagger_docs: '/docs',
       description:
-        'Backend service untuk menunjang kelas frontend dalam ujian UKK dengan multi-tenancy App Maker.',
+        'Backend service untuk Sistem Reservasi Coworking Space.',
       documentation_links: {
         swagger: `${process.env.BASE_URL || 'http://localhost:3000'}/docs`,
         swagger_json: `${process.env.BASE_URL || 'http://localhost:3000'}/docs-json`,

@@ -27,7 +27,6 @@ Edit `.env`, sesuaikan nilai ini:
 ```env
 DATABASE_URL="postgresql://USER:PASSWORD@localhost:PORT/NAMA_DATABASE"
 JWT_SECRET="isi_bebas_minimal_32_karakter"
-JWT_MAKER_SECRET="isi_bebas_minimal_32_karakter"
 PORT=3000
 BASE_URL="http://localhost:3000"
 ```
@@ -43,11 +42,10 @@ Ini akan membuat semua tabel secara otomatis.
 npx ts-node prisma/seed.ts
 ```
 Akan membuat akun demo siap pakai:
-| Role | Username | Password | App Key |
-|---|---|---|---|
-| App Maker | demo_maker | Password123! | mk_demo_ukk_2026_paket_b |
-| Admin Space | admin_moklet | Admin123! | — |
-| Member | johndoe | Secret123! | — |
+| Role | Username | Password |
+|---|---|---|
+| Admin Space | admin_moklet | Admin123! |
+| Member | johndoe | Secret123! |
 
 ### Langkah 5 — Jalankan server
 
@@ -74,11 +72,7 @@ npm run start:prod
 
 ---
 
-## Autentikasi & Multi-Tenancy
-
-### App Maker (isolasi data per siswa)
-1. Daftar: `POST /api/maker/register` → dapat `app_key`
-2. Sertakan header `x-maker-key: <app_key>` di **setiap request**
+## Autentikasi
 
 ### User (Member / Admin Space)
 1. Login: `POST /api/auth/login` → dapat `access_token`
@@ -86,7 +80,7 @@ npm run start:prod
 
 ---
 
-## Daftar 50 Endpoint
+## Daftar Endpoint
 
 ### Root
 | Method | Endpoint | Auth |
@@ -94,81 +88,72 @@ npm run start:prod
 | GET | `/` | Publik |
 | GET | `/health` | Publik |
 
-### App Maker
-| Method | Endpoint | Auth |
-|---|---|---|
-| POST | `/api/maker/register` | Publik |
-| POST | `/api/maker/login` | Publik |
-| GET | `/api/maker/me` | Bearer Maker |
-| GET | `/api/maker/stats` | Bearer Maker + x-maker-key |
-| GET | `/api/maker/list` | Publik |
-
 ### Auth
 | Method | Endpoint | Auth |
 |---|---|---|
-| POST | `/api/auth/register/member` | x-maker-key |
-| POST | `/api/auth/register/admin-space` | x-maker-key |
-| POST | `/api/auth/login` | x-maker-key |
-| GET | `/api/auth/profile` | Bearer + x-maker-key |
+| POST | `/api/auth/register/member` | Publik |
+| POST | `/api/auth/register/admin-space` | Publik |
+| POST | `/api/auth/login` | Publik |
+| GET | `/api/auth/profile` | Bearer |
 
-### Spaces (Publik/User)
+### Spaces (Katalog & Ketersediaan)
 | Method | Endpoint | Auth |
 |---|---|---|
-| GET | `/api/spaces/types` | x-maker-key |
-| GET | `/api/spaces/availability?id_space=&tanggal=&jam_mulai=&durasi_jam=` | x-maker-key |
-| GET | `/api/spaces?tipe=&search=` | x-maker-key |
-| GET | `/api/spaces/:id` | x-maker-key |
+| GET | `/api/spaces/types` | Publik |
+| GET | `/api/spaces/availability?id_space=&tanggal=&jam_mulai=&durasi_jam=` | Publik |
+| GET | `/api/spaces?tipe=&search=` | Publik |
+| GET | `/api/spaces/:id` | Publik |
 
-### Diskon (Publik/User)
+### Diskon & Promo
 | Method | Endpoint | Auth |
 |---|---|---|
-| GET | `/api/diskon/active` | x-maker-key |
-| POST | `/api/diskon/check` | x-maker-key |
-| GET | `/api/diskon/:id` | x-maker-key |
+| GET | `/api/diskon/active` | Publik |
+| POST | `/api/diskon/check` | Publik |
+| GET | `/api/diskon/:id` | Publik |
 
 ### Reservasi (Member)
 | Method | Endpoint | Auth |
 |---|---|---|
-| POST | `/api/reservasi` | Bearer Member + x-maker-key |
-| GET | `/api/reservasi/my` | Bearer Member + x-maker-key |
-| GET | `/api/reservasi/my/history?month=&year=` | Bearer Member + x-maker-key |
-| GET | `/api/reservasi/:id/e-ticket` | Bearer + x-maker-key |
-| GET | `/api/reservasi/:id` | Bearer + x-maker-key |
-| PATCH | `/api/reservasi/:id/cancel` | Bearer Member + x-maker-key |
+| POST | `/api/reservasi` | Bearer Member |
+| GET | `/api/reservasi/my` | Bearer Member |
+| GET | `/api/reservasi/my/history?month=&year=` | Bearer Member |
+| GET | `/api/reservasi/:id/e-ticket` | Bearer |
+| GET | `/api/reservasi/:id` | Bearer |
+| PATCH | `/api/reservasi/:id/cancel` | Bearer Member |
 
 ### Admin Panel
 | Method | Endpoint | Auth |
 |---|---|---|
-| GET | `/api/admin/profile` | Bearer Admin + x-maker-key |
-| PUT | `/api/admin/profile` | Bearer Admin + x-maker-key |
-| GET | `/api/admin/members?search=` | Bearer Admin + x-maker-key |
-| POST | `/api/admin/members` | Bearer Admin + x-maker-key |
-| GET | `/api/admin/members/:id` | Bearer Admin + x-maker-key |
-| PUT | `/api/admin/members/:id` | Bearer Admin + x-maker-key |
-| DELETE | `/api/admin/members/:id` | Bearer Admin + x-maker-key |
-| GET | `/api/admin/spaces` | Bearer Admin + x-maker-key |
-| POST | `/api/admin/spaces` | Bearer Admin + x-maker-key |
-| GET | `/api/admin/spaces/:id` | Bearer Admin + x-maker-key |
-| PUT | `/api/admin/spaces/:id` | Bearer Admin + x-maker-key |
-| DELETE | `/api/admin/spaces/:id` | Bearer Admin + x-maker-key |
-| GET | `/api/admin/diskon` | Bearer Admin + x-maker-key |
-| POST | `/api/admin/diskon` | Bearer Admin + x-maker-key |
-| GET | `/api/admin/diskon/:id` | Bearer Admin + x-maker-key |
-| PUT | `/api/admin/diskon/:id` | Bearer Admin + x-maker-key |
-| DELETE | `/api/admin/diskon/:id` | Bearer Admin + x-maker-key |
-| GET | `/api/admin/reservasi?month=&year=&status=&id_space=&tanggal=` | Bearer Admin + x-maker-key |
-| PATCH | `/api/admin/reservasi/:id/status` | Bearer Admin + x-maker-key |
-| POST | `/api/admin/reservasi/:id/check-in` | Bearer Admin + x-maker-key |
-| POST | `/api/admin/reservasi/:id/check-out` | Bearer Admin + x-maker-key |
-| GET | `/api/admin/reports/monthly?month=&year=` | Bearer Admin + x-maker-key |
-| GET | `/api/admin/reports/income?month=&year=` | Bearer Admin + x-maker-key |
+| GET | `/api/admin/profile` | Bearer Admin |
+| PUT | `/api/admin/profile` | Bearer Admin |
+| GET | `/api/admin/members?search=` | Bearer Admin |
+| POST | `/api/admin/members` | Bearer Admin |
+| GET | `/api/admin/members/:id` | Bearer Admin |
+| PUT | `/api/admin/members/:id` | Bearer Admin |
+| DELETE | `/api/admin/members/:id` | Bearer Admin |
+| GET | `/api/admin/spaces` | Bearer Admin |
+| POST | `/api/admin/spaces` | Bearer Admin |
+| GET | `/api/admin/spaces/:id` | Bearer Admin |
+| PUT | `/api/admin/spaces/:id` | Bearer Admin |
+| DELETE | `/api/admin/spaces/:id` | Bearer Admin |
+| GET | `/api/admin/diskon` | Bearer Admin |
+| POST | `/api/admin/diskon` | Bearer Admin |
+| GET | `/api/admin/diskon/:id` | Bearer Admin |
+| PUT | `/api/admin/diskon/:id` | Bearer Admin |
+| DELETE | `/api/admin/diskon/:id` | Bearer Admin |
+| GET | `/api/admin/reservasi?month=&year=&status=&id_space=&tanggal=` | Bearer Admin |
+| PATCH | `/api/admin/reservasi/:id/status` | Bearer Admin |
+| POST | `/api/admin/reservasi/:id/check-in` | Bearer Admin |
+| POST | `/api/admin/reservasi/:id/check-out` | Bearer Admin |
+| GET | `/api/admin/reports/monthly?month=&year=` | Bearer Admin |
+| GET | `/api/admin/reports/income?month=&year=` | Bearer Admin |
 
 ### Upload Media
 | Method | Endpoint | Auth |
 |---|---|---|
-| POST | `/api/upload/image` | x-maker-key |
-| POST | `/api/upload/spaces` | x-maker-key |
-| POST | `/api/upload/members` | x-maker-key |
+| POST | `/api/upload/image` | Publik |
+| POST | `/api/upload/spaces` | Publik |
+| POST | `/api/upload/members` | Publik |
 
 ---
 
@@ -180,7 +165,6 @@ smart-space-booking/
 │   ├── auth/           # Autentikasi (register/login Member & Admin Space)
 │   ├── common/         # Guards, decorators, filters, interceptors
 │   ├── diskon/         # Katalog diskon publik
-│   ├── maker/          # Multi-tenancy App Maker
 │   ├── prisma/         # Prisma service & module
 │   ├── reservasi/      # Reservasi member (buat, e-ticket, histori, cancel)
 │   ├── spaces/         # Katalog space publik
@@ -217,7 +201,6 @@ smart-space-booking/
 
 ## Keamanan
 
-- Password di-hash menggunakan **bcrypt** (salt rounds: 10) — berlaku untuk register member, admin space, app maker, dan update password oleh admin
-- JWT token terpisah untuk App Maker (`JWT_MAKER_SECRET`) dan User (`JWT_SECRET`)
-- Isolasi data multi-tenancy: semua query difilter berdasarkan `maker_id` via `x-maker-key`
+- Password di-hash menggunakan **bcrypt** (salt rounds: 10) — berlaku untuk register member, admin space, dan update password oleh admin
+- JWT token untuk autentikasi user (`JWT_SECRET`)
 - Role-based access: endpoint admin hanya bisa diakses role `admin_space`, endpoint member hanya role `member`

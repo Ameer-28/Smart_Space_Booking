@@ -10,14 +10,12 @@ import {
   Query,
   UseGuards,
   ParseIntPipe,
-  Request,
   HttpStatus,
 } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiBearerAuth,
-  ApiSecurity,
   ApiQuery,
 } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
@@ -29,15 +27,13 @@ import { UpdateReservasiStatusDto } from './dto/update-reservasi-status.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
-import { MakerKeyGuard } from '../common/guards/maker-key.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @ApiTags('Admin Panel')
 @Controller('api/admin')
-@UseGuards(JwtAuthGuard, RolesGuard, MakerKeyGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('admin_space')
 @ApiBearerAuth('JWT')
-@ApiSecurity('MakerKey')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
@@ -63,35 +59,35 @@ export class AdminController {
   @ApiOperation({ summary: 'Daftar Semua Member / Pelanggan Coworking' })
   @ApiQuery({ name: 'search', required: false })
   async getMembers(@CurrentUser() user: any, @Query('search') search?: string) {
-    const data = await this.adminService.getMembers(user.maker_id, search);
+    const data = await this.adminService.getMembers(search);
     return { status: true, statusCode: HttpStatus.OK, message: 'Berhasil memproses permintaan', data, timestamp: new Date().toISOString() };
   }
 
   @Post('members')
   @ApiOperation({ summary: 'Tambah Data Member Baru oleh Admin' })
   async createMember(@Body() dto: CreateMemberAdminDto, @CurrentUser() user: any) {
-    const data = await this.adminService.createMember(dto, user.maker_id, user.spaceOwner.id);
+    const data = await this.adminService.createMember(dto);
     return { status: true, statusCode: HttpStatus.CREATED, message: 'Data member baru berhasil ditambahkan!', data, timestamp: new Date().toISOString() };
   }
 
   @Get('members/:id')
   @ApiOperation({ summary: 'Detail Data Member Berdasarkan ID' })
-  async getMemberById(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: any) {
-    const data = await this.adminService.getMemberById(id, user.maker_id);
+  async getMemberById(@Param('id', ParseIntPipe) id: number) {
+    const data = await this.adminService.getMemberById(id);
     return { status: true, statusCode: HttpStatus.OK, message: 'Berhasil memproses permintaan', data, timestamp: new Date().toISOString() };
   }
 
   @Put('members/:id')
   @ApiOperation({ summary: 'Update Data Member / Pelanggan' })
-  async updateMember(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateMemberAdminDto, @CurrentUser() user: any) {
-    const data = await this.adminService.updateMember(id, dto, user.maker_id);
+  async updateMember(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateMemberAdminDto) {
+    const data = await this.adminService.updateMember(id, dto);
     return { status: true, statusCode: HttpStatus.OK, message: 'Data member berhasil diperbarui!', data, timestamp: new Date().toISOString() };
   }
 
   @Delete('members/:id')
   @ApiOperation({ summary: 'Hapus Data Member / Pelanggan' })
-  async deleteMember(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: any) {
-    const data = await this.adminService.deleteMember(id, user.maker_id);
+  async deleteMember(@Param('id', ParseIntPipe) id: number) {
+    const data = await this.adminService.deleteMember(id);
     return { status: true, statusCode: HttpStatus.OK, message: 'Data member berhasil dihapus!', data, timestamp: new Date().toISOString() };
   }
 

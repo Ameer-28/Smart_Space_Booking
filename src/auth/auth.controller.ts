@@ -6,19 +6,16 @@ import {
   UseGuards,
   HttpStatus,
   HttpCode,
-  Request,
 } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiBearerAuth,
-  ApiSecurity,
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterMemberDto } from './dto/register-member.dto';
 import { RegisterAdminSpaceDto } from './dto/register-admin-space.dto';
 import { LoginDto } from './dto/login.dto';
-import { MakerKeyGuard } from '../common/guards/maker-key.guard';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
@@ -28,11 +25,9 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register/member')
-  @UseGuards(MakerKeyGuard)
-  @ApiSecurity('MakerKey')
   @ApiOperation({ summary: 'Registrasi Akun Member / Pelanggan Baru' })
-  async registerMember(@Body() dto: RegisterMemberDto, @Request() req: any) {
-    const data = await this.authService.registerMember(dto, req.makerId);
+  async registerMember(@Body() dto: RegisterMemberDto) {
+    const data = await this.authService.registerMember(dto);
     return {
       status: true,
       statusCode: HttpStatus.CREATED,
@@ -43,14 +38,9 @@ export class AuthController {
   }
 
   @Post('register/admin-space')
-  @UseGuards(MakerKeyGuard)
-  @ApiSecurity('MakerKey')
   @ApiOperation({ summary: 'Registrasi Pengelola Lokasi / Admin Coworking Space' })
-  async registerAdminSpace(
-    @Body() dto: RegisterAdminSpaceDto,
-    @Request() req: any,
-  ) {
-    const data = await this.authService.registerAdminSpace(dto, req.makerId);
+  async registerAdminSpace(@Body() dto: RegisterAdminSpaceDto) {
+    const data = await this.authService.registerAdminSpace(dto);
     return {
       status: true,
       statusCode: HttpStatus.CREATED,
@@ -62,11 +52,9 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(MakerKeyGuard)
-  @ApiSecurity('MakerKey')
   @ApiOperation({ summary: 'Login Akun User (Member atau Admin Space) - Mengembalikan JWT Token' })
-  async login(@Body() dto: LoginDto, @Request() req: any) {
-    const data = await this.authService.login(dto, req.makerId);
+  async login(@Body() dto: LoginDto) {
+    const data = await this.authService.login(dto);
     return {
       status: true,
       statusCode: HttpStatus.OK,
@@ -77,9 +65,8 @@ export class AuthController {
   }
 
   @Get('profile')
-  @UseGuards(JwtAuthGuard, MakerKeyGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT')
-  @ApiSecurity('MakerKey')
   @ApiOperation({ summary: 'Cek Profil & Hak Akses Pengguna yang Sedang Login' })
   async getProfile(@CurrentUser() user: any) {
     const data = await this.authService.getProfile(user.sub);

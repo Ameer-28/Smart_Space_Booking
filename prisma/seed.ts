@@ -10,26 +10,10 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Seeding database...');
 
-  // 1. App Maker (default untuk demo)
-  const makerPassword = await bcrypt.hash('Password123!', 10);
-  let maker = await prisma.appMaker.findUnique({ where: { username: 'demo_maker' } });
-  if (!maker) {
-    maker = await prisma.appMaker.create({
-      data: {
-        name: 'Demo Maker UKK',
-        username: 'demo_maker',
-        email: 'demo@ukk.sch.id',
-        password: makerPassword,
-        app_key: 'mk_demo_ukk_2026_paket_b',
-      },
-    });
-  }
-  console.log(`✅ App Maker: ${maker.username} | app_key: ${maker.app_key}`);
-
-  // 2. Admin Space
+  // 1. Admin Space
   const adminPassword = await bcrypt.hash('Admin123!', 10);
-  let adminUser = await prisma.user.findFirst({
-    where: { username: 'admin_moklet', maker_id: maker.id },
+  let adminUser = await prisma.user.findUnique({
+    where: { username: 'admin_moklet' },
     include: { spaceOwner: true },
   });
   if (!adminUser) {
@@ -38,7 +22,6 @@ async function main() {
         username: 'admin_moklet',
         password: adminPassword,
         role: 'admin_space',
-        maker_id: maker.id,
         spaceOwner: {
           create: {
             nama_coworking: 'Moklet Hub Coworking Space',
@@ -56,7 +39,7 @@ async function main() {
 
   const ownerId = adminUser.spaceOwner!.id;
 
-  // 3. Spaces
+  // 2. Spaces
   const existingSpacesCount = await prisma.space.count({ where: { id_owner: ownerId } });
   if (existingSpacesCount === 0) {
     await prisma.space.createMany({
@@ -72,7 +55,7 @@ async function main() {
     console.log(`⏭  Spaces already seeded (${existingSpacesCount})`);
   }
 
-  // 4. Diskon
+  // 3. Diskon
   const existingDiskon = await prisma.diskon.count({ where: { id_owner: ownerId } });
   if (existingDiskon === 0) {
     await prisma.diskon.createMany({
@@ -86,10 +69,10 @@ async function main() {
     console.log(`⏭  Diskons already seeded (${existingDiskon})`);
   }
 
-  // 5. Member
+  // 4. Member
   const memberPassword = await bcrypt.hash('Secret123!', 10);
-  const existingMember = await prisma.user.findFirst({
-    where: { username: 'johndoe', maker_id: maker.id },
+  const existingMember = await prisma.user.findUnique({
+    where: { username: 'johndoe' },
   });
   if (!existingMember) {
     await prisma.user.create({
@@ -97,7 +80,6 @@ async function main() {
         username: 'johndoe',
         password: memberPassword,
         role: 'member',
-        maker_id: maker.id,
         member: {
           create: {
             nama_member: 'John Doe',
@@ -115,7 +97,6 @@ async function main() {
 
   console.log('\n🎉 Seed selesai!');
   console.log('\n📋 Akun Demo:');
-  console.log('  App Key    →', maker.app_key);
   console.log('  Admin      → username: admin_moklet | password: Admin123!');
   console.log('  Member     → username: johndoe | password: Secret123!');
 }

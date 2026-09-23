@@ -44,10 +44,8 @@ export class AdminService {
 
   // ─── MEMBERS ───────────────────────────────────────────────────────────────
 
-  async getMembers(makerId: number, search?: string) {
-    const where: any = {
-      user: { maker_id: makerId },
-    };
+  async getMembers(search?: string) {
+    const where: any = {};
     if (search) {
       where.OR = [
         { nama_member: { contains: search, mode: 'insensitive' } },
@@ -71,9 +69,9 @@ export class AdminService {
     return members.map((m) => this.formatMember(m));
   }
 
-  async createMember(dto: CreateMemberAdminDto, makerId: number, ownerId: number) {
-    const existing = await this.prisma.user.findFirst({
-      where: { username: dto.username, maker_id: makerId },
+  async createMember(dto: CreateMemberAdminDto) {
+    const existing = await this.prisma.user.findUnique({
+      where: { username: dto.username },
     });
     if (existing) throw new BadRequestException('Username sudah digunakan!');
 
@@ -84,7 +82,6 @@ export class AdminService {
         username: dto.username,
         password: hashedPassword,
         role: 'member',
-        maker_id: makerId,
         member: {
           create: {
             nama_member: dto.nama_member,
@@ -101,9 +98,9 @@ export class AdminService {
     return this.formatMember(user.member);
   }
 
-  async getMemberById(id: number, makerId: number) {
-    const member = await this.prisma.member.findFirst({
-      where: { id, user: { maker_id: makerId } },
+  async getMemberById(id: number) {
+    const member = await this.prisma.member.findUnique({
+      where: { id },
       select: {
         id: true,
         nama_member: true,
@@ -118,9 +115,9 @@ export class AdminService {
     return this.formatMember(member);
   }
 
-  async updateMember(id: number, dto: UpdateMemberAdminDto, makerId: number) {
-    const member = await this.prisma.member.findFirst({
-      where: { id, user: { maker_id: makerId } },
+  async updateMember(id: number, dto: UpdateMemberAdminDto) {
+    const member = await this.prisma.member.findUnique({
+      where: { id },
       include: { user: true },
     });
     if (!member) throw new NotFoundException('Member tidak ditemukan!');
@@ -150,9 +147,9 @@ export class AdminService {
     return this.formatMember(updated);
   }
 
-  async deleteMember(id: number, makerId: number) {
-    const member = await this.prisma.member.findFirst({
-      where: { id, user: { maker_id: makerId } },
+  async deleteMember(id: number) {
+    const member = await this.prisma.member.findUnique({
+      where: { id },
       include: { user: true },
     });
     if (!member) throw new NotFoundException('Member tidak ditemukan!');

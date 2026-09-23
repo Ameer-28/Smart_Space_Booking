@@ -6,11 +6,21 @@
     "version": "1.0.0"
   },
   "variable": [
-    { "key": "base_url", "value": "http://localhost:3000", "type": "string" },
-    { "key": "maker_key", "value": "mk_demo_ukk_2026_paket_b", "type": "string" },
-    { "key": "token_maker", "value": "", "type": "string" },
-    { "key": "token_member", "value": "", "type": "string" },
-    { "key": "token_admin", "value": "", "type": "string" }
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "token_member",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "token_admin",
+      "value": "",
+      "type": "string"
+    }
   ],
   "item": [
     {
@@ -18,71 +28,40 @@
       "item": [
         {
           "name": "GET / — Status API",
-          "request": { "method": "GET", "url": "{{base_url}}/", "header": [] }
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/",
+            "header": []
+          }
         },
         {
           "name": "GET /health — Health Check",
-          "request": { "method": "GET", "url": "{{base_url}}/health", "header": [] }
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/health",
+            "header": []
+          }
         }
       ]
     },
     {
-      "name": "02. App Maker (Multi-Tenancy)",
-      "item": [
-        {
-          "name": "POST /api/maker/register",
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/api/maker/register",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Budi Santoso\",\n  \"username\": \"budisantoso\",\n  \"email\": \"budi@smk.sch.id\",\n  \"password\": \"Password123!\"\n}"
-            }
-          }
-        },
-        {
-          "name": "POST /api/maker/login",
-          "event": [{ "listen": "test", "script": { "exec": ["const res = pm.response.json();", "if (res.data && res.data.access_token) pm.collectionVariables.set('token_maker', res.data.access_token);"], "type": "text/javascript" } }],
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/api/maker/login",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"usernameOrEmail\": \"budisantoso\",\n  \"password\": \"Password123!\"\n}" }
-          }
-        },
-        {
-          "name": "GET /api/maker/me",
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/api/maker/me",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token_maker}}" }]
-          }
-        },
-        {
-          "name": "GET /api/maker/stats",
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/api/maker/stats",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token_maker}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }]
-          }
-        },
-        {
-          "name": "GET /api/maker/list",
-          "request": { "method": "GET", "url": "{{base_url}}/api/maker/list", "header": [] }
-        }
-      ]
-    },
-    {
-      "name": "03. Auth (Member & Admin)",
+      "name": "02. Auth (Member & Admin)",
       "item": [
         {
           "name": "POST /api/auth/register/member",
           "request": {
             "method": "POST",
             "url": "{{base_url}}/api/auth/register/member",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "x-maker-key", "value": "{{maker_key}}" }],
-            "body": { "mode": "raw", "raw": "{\n  \"username\": \"johndoe\",\n  \"password\": \"Secret123!\",\n  \"nama_member\": \"John Doe\",\n  \"instansi\": \"Universitas Indonesia\",\n  \"alamat\": \"Jl. Sudirman No. 123, Jakarta\",\n  \"telp\": \"081234567890\"\n}" }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"johndoe\",\n  \"password\": \"Secret123!\",\n  \"nama_member\": \"John Doe\",\n  \"instansi\": \"Universitas Indonesia\",\n  \"alamat\": \"Jl. Sudirman No. 123, Jakarta\",\n  \"telp\": \"081234567890\"\n}"
+            }
           }
         },
         {
@@ -90,28 +69,74 @@
           "request": {
             "method": "POST",
             "url": "{{base_url}}/api/auth/register/admin-space",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "x-maker-key", "value": "{{maker_key}}" }],
-            "body": { "mode": "raw", "raw": "{\n  \"username\": \"admin_space1\",\n  \"password\": \"Admin123!\",\n  \"nama_coworking\": \"Moklet Hub Coworking\",\n  \"nama_pemilik\": \"Ahmad Bidin\",\n  \"telp\": \"081298765432\"\n}" }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin_space1\",\n  \"password\": \"Admin123!\",\n  \"nama_coworking\": \"Moklet Hub Coworking\",\n  \"nama_pemilik\": \"Ahmad Bidin\",\n  \"telp\": \"081298765432\"\n}"
+            }
           }
         },
         {
           "name": "POST /api/auth/login (Member)",
-          "event": [{ "listen": "test", "script": { "exec": ["const res = pm.response.json();", "if (res.data && res.data.access_token) pm.collectionVariables.set('token_member', res.data.access_token);"], "type": "text/javascript" } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.access_token) pm.collectionVariables.set('token_member', res.data.access_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "url": "{{base_url}}/api/auth/login",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "x-maker-key", "value": "{{maker_key}}" }],
-            "body": { "mode": "raw", "raw": "{\n  \"username\": \"johndoe\",\n  \"password\": \"Secret123!\"\n}" }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"johndoe\",\n  \"password\": \"Secret123!\"\n}"
+            }
           }
         },
         {
           "name": "POST /api/auth/login (Admin)",
-          "event": [{ "listen": "test", "script": { "exec": ["const res = pm.response.json();", "if (res.data && res.data.access_token) pm.collectionVariables.set('token_admin', res.data.access_token);"], "type": "text/javascript" } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.access_token) pm.collectionVariables.set('token_admin', res.data.access_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "url": "{{base_url}}/api/auth/login",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "x-maker-key", "value": "{{maker_key}}" }],
-            "body": { "mode": "raw", "raw": "{\n  \"username\": \"admin_moklet\",\n  \"password\": \"Admin123!\"\n}" }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin_moklet\",\n  \"password\": \"Admin123!\"\n}"
+            }
           }
         },
         {
@@ -119,260 +144,705 @@
           "request": {
             "method": "GET",
             "url": "{{base_url}}/api/auth/profile",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token_member}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }]
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_member}}"
+              }
+            ]
           }
         }
       ]
     },
     {
-      "name": "04. Spaces (Publik)",
+      "name": "03. Spaces (Publik)",
       "item": [
         {
           "name": "GET /api/spaces/types",
-          "request": { "method": "GET", "url": "{{base_url}}/api/spaces/types", "header": [{ "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/spaces/types",
+            "header": []
+          }
         },
         {
           "name": "GET /api/spaces/availability",
-          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/spaces/availability?id_space=1&tanggal=2026-08-30&jam_mulai=09:00&durasi_jam=3", "host": ["{{base_url}}"], "path": ["api", "spaces", "availability"], "query": [{ "key": "id_space", "value": "1" }, { "key": "tanggal", "value": "2026-08-30" }, { "key": "jam_mulai", "value": "09:00" }, { "key": "durasi_jam", "value": "3" }] }, "header": [{ "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/spaces/availability?id_space=1&tanggal=2026-08-30&jam_mulai=09:00&durasi_jam=3",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "spaces",
+                "availability"
+              ],
+              "query": [
+                {
+                  "key": "id_space",
+                  "value": "1"
+                },
+                {
+                  "key": "tanggal",
+                  "value": "2026-08-30"
+                },
+                {
+                  "key": "jam_mulai",
+                  "value": "09:00"
+                },
+                {
+                  "key": "durasi_jam",
+                  "value": "3"
+                }
+              ]
+            },
+            "header": []
+          }
         },
         {
           "name": "GET /api/spaces",
-          "request": { "method": "GET", "url": "{{base_url}}/api/spaces", "header": [{ "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/spaces",
+            "header": []
+          }
         },
         {
           "name": "GET /api/spaces/:id",
-          "request": { "method": "GET", "url": "{{base_url}}/api/spaces/1", "header": [{ "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/spaces/1",
+            "header": []
+          }
         }
       ]
     },
     {
-      "name": "05. Diskon & Promo",
+      "name": "04. Diskon & Promo",
       "item": [
         {
           "name": "GET /api/diskon/active",
-          "request": { "method": "GET", "url": "{{base_url}}/api/diskon/active", "header": [{ "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/diskon/active",
+            "header": []
+          }
         },
         {
           "name": "POST /api/diskon/check",
           "request": {
             "method": "POST",
             "url": "{{base_url}}/api/diskon/check",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "x-maker-key", "value": "{{maker_key}}" }],
-            "body": { "mode": "raw", "raw": "{\n  \"nama_diskon\": \"DISKONHEMAT20\"\n}" }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama_diskon\": \"DISKONHEMAT20\"\n}"
+            }
           }
         },
         {
           "name": "GET /api/diskon/:id",
-          "request": { "method": "GET", "url": "{{base_url}}/api/diskon/1", "header": [{ "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/diskon/1",
+            "header": []
+          }
         }
       ]
     },
     {
-      "name": "06. Reservasi (Member)",
+      "name": "05. Reservasi (Member)",
       "item": [
         {
           "name": "POST /api/reservasi — Buat Reservasi",
           "request": {
             "method": "POST",
             "url": "{{base_url}}/api/reservasi",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token_member}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }],
-            "body": { "mode": "raw", "raw": "{\n  \"id_space\": 1,\n  \"tanggal_reservasi\": \"2026-08-30\",\n  \"jam_mulai\": \"09:00\",\n  \"durasi_jam\": 3,\n  \"kode_promo\": \"DISKONHEMAT20\"\n}" }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_member}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_space\": 1,\n  \"tanggal_reservasi\": \"2026-08-30\",\n  \"jam_mulai\": \"09:00\",\n  \"durasi_jam\": 3,\n  \"kode_promo\": \"DISKONHEMAT20\"\n}"
+            }
           }
         },
         {
           "name": "GET /api/reservasi/my",
-          "request": { "method": "GET", "url": "{{base_url}}/api/reservasi/my", "header": [{ "key": "Authorization", "value": "Bearer {{token_member}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/reservasi/my",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_member}}"
+              }
+            ]
+          }
         },
         {
           "name": "GET /api/reservasi/my/history",
-          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/reservasi/my/history?month=8&year=2026", "host": ["{{base_url}}"], "path": ["api", "reservasi", "my", "history"], "query": [{ "key": "month", "value": "8" }, { "key": "year", "value": "2026" }] }, "header": [{ "key": "Authorization", "value": "Bearer {{token_member}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/reservasi/my/history?month=8&year=2026",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reservasi",
+                "my",
+                "history"
+              ],
+              "query": [
+                {
+                  "key": "month",
+                  "value": "8"
+                },
+                {
+                  "key": "year",
+                  "value": "2026"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_member}}"
+              }
+            ]
+          }
         },
         {
           "name": "GET /api/reservasi/:id/e-ticket",
-          "request": { "method": "GET", "url": "{{base_url}}/api/reservasi/1/e-ticket", "header": [{ "key": "Authorization", "value": "Bearer {{token_member}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/reservasi/1/e-ticket",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_member}}"
+              }
+            ]
+          }
         },
         {
           "name": "GET /api/reservasi/:id",
-          "request": { "method": "GET", "url": "{{base_url}}/api/reservasi/1", "header": [{ "key": "Authorization", "value": "Bearer {{token_member}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/reservasi/1",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_member}}"
+              }
+            ]
+          }
         },
         {
           "name": "PATCH /api/reservasi/:id/cancel",
-          "request": { "method": "PATCH", "url": "{{base_url}}/api/reservasi/1/cancel", "header": [{ "key": "Authorization", "value": "Bearer {{token_member}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/api/reservasi/1/cancel",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_member}}"
+              }
+            ]
+          }
         }
       ]
     },
     {
-      "name": "07. Admin — Profil",
+      "name": "06. Admin — Profil",
       "item": [
         {
           "name": "GET /api/admin/profile",
-          "request": { "method": "GET", "url": "{{base_url}}/api/admin/profile", "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/admin/profile",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ]
+          }
         },
         {
           "name": "PUT /api/admin/profile",
           "request": {
             "method": "PUT",
             "url": "{{base_url}}/api/admin/profile",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token_admin}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }],
-            "body": { "mode": "raw", "raw": "{\n  \"nama_coworking\": \"Moklet Hub Coworking Space\",\n  \"nama_pemilik\": \"Ahmad Bidin, S.Kom\",\n  \"telp\": \"081298765432\"\n}" }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama_coworking\": \"Moklet Hub Coworking Space\",\n  \"nama_pemilik\": \"Ahmad Bidin, S.Kom\",\n  \"telp\": \"081298765432\"\n}"
+            }
           }
         }
       ]
     },
     {
-      "name": "08. Admin — Members CRUD",
+      "name": "07. Admin — Members CRUD",
       "item": [
         {
           "name": "GET /api/admin/members",
-          "request": { "method": "GET", "url": "{{base_url}}/api/admin/members", "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/admin/members",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ]
+          }
         },
         {
           "name": "POST /api/admin/members",
           "request": {
             "method": "POST",
             "url": "{{base_url}}/api/admin/members",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token_admin}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }],
-            "body": { "mode": "raw", "raw": "{\n  \"username\": \"user_budi\",\n  \"password\": \"Secret123!\",\n  \"nama_member\": \"Budi Raharjo\",\n  \"instansi\": \"SMK Telkom Malang\",\n  \"alamat\": \"Jl. Danau Ranau No. 1, Malang\",\n  \"telp\": \"085712345678\"\n}" }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"user_budi\",\n  \"password\": \"Secret123!\",\n  \"nama_member\": \"Budi Raharjo\",\n  \"instansi\": \"SMK Telkom Malang\",\n  \"alamat\": \"Jl. Danau Ranau No. 1, Malang\",\n  \"telp\": \"085712345678\"\n}"
+            }
           }
         },
         {
           "name": "GET /api/admin/members/:id",
-          "request": { "method": "GET", "url": "{{base_url}}/api/admin/members/1", "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/admin/members/1",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ]
+          }
         },
         {
           "name": "PUT /api/admin/members/:id",
           "request": {
             "method": "PUT",
             "url": "{{base_url}}/api/admin/members/1",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token_admin}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }],
-            "body": { "mode": "raw", "raw": "{\n  \"nama_member\": \"Budi Raharjo, S.T.\",\n  \"instansi\": \"PT Teknologi Hebat\"\n}" }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama_member\": \"Budi Raharjo, S.T.\",\n  \"instansi\": \"PT Teknologi Hebat\"\n}"
+            }
           }
         },
         {
           "name": "DELETE /api/admin/members/:id",
-          "request": { "method": "DELETE", "url": "{{base_url}}/api/admin/members/1", "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/api/admin/members/1",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ]
+          }
         }
       ]
     },
     {
-      "name": "09. Admin — Spaces CRUD",
+      "name": "08. Admin — Spaces CRUD",
       "item": [
         {
           "name": "GET /api/admin/spaces",
-          "request": { "method": "GET", "url": "{{base_url}}/api/admin/spaces", "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/admin/spaces",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ]
+          }
         },
         {
           "name": "POST /api/admin/spaces",
           "request": {
             "method": "POST",
             "url": "{{base_url}}/api/admin/spaces",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token_admin}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }],
-            "body": { "mode": "raw", "raw": "{\n  \"nama_space\": \"Personal Desk Alpha 01\",\n  \"harga_per_jam\": 25000,\n  \"tipe\": \"desk\",\n  \"kapasitas\": 1,\n  \"deskripsi\": \"WiFi 100Mbps, stopkontak, coffee\"\n}" }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama_space\": \"Personal Desk Alpha 01\",\n  \"harga_per_jam\": 25000,\n  \"tipe\": \"desk\",\n  \"kapasitas\": 1,\n  \"deskripsi\": \"WiFi 100Mbps, stopkontak, coffee\"\n}"
+            }
           }
         },
         {
           "name": "GET /api/admin/spaces/:id",
-          "request": { "method": "GET", "url": "{{base_url}}/api/admin/spaces/1", "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/admin/spaces/1",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ]
+          }
         },
         {
           "name": "PUT /api/admin/spaces/:id",
           "request": {
             "method": "PUT",
             "url": "{{base_url}}/api/admin/spaces/1",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token_admin}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }],
-            "body": { "mode": "raw", "raw": "{\n  \"harga_per_jam\": 30000,\n  \"kapasitas\": 2\n}" }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"harga_per_jam\": 30000,\n  \"kapasitas\": 2\n}"
+            }
           }
         },
         {
           "name": "DELETE /api/admin/spaces/:id",
-          "request": { "method": "DELETE", "url": "{{base_url}}/api/admin/spaces/1", "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/api/admin/spaces/1",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ]
+          }
         }
       ]
     },
     {
-      "name": "10. Admin — Diskon CRUD",
+      "name": "09. Admin — Diskon CRUD",
       "item": [
         {
           "name": "GET /api/admin/diskon",
-          "request": { "method": "GET", "url": "{{base_url}}/api/admin/diskon", "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/admin/diskon",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ]
+          }
         },
         {
           "name": "POST /api/admin/diskon",
           "request": {
             "method": "POST",
             "url": "{{base_url}}/api/admin/diskon",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token_admin}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }],
-            "body": { "mode": "raw", "raw": "{\n  \"nama_diskon\": \"PROMOAGUSTUS\",\n  \"persentase_diskon\": 20,\n  \"tanggal_awal\": \"2026-08-01T00:00:00Z\",\n  \"tanggal_akhir\": \"2026-08-31T23:59:59Z\"\n}" }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama_diskon\": \"PROMOAGUSTUS\",\n  \"persentase_diskon\": 20,\n  \"tanggal_awal\": \"2026-08-01T00:00:00Z\",\n  \"tanggal_akhir\": \"2026-08-31T23:59:59Z\"\n}"
+            }
           }
         },
         {
           "name": "GET /api/admin/diskon/:id",
-          "request": { "method": "GET", "url": "{{base_url}}/api/admin/diskon/1", "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/admin/diskon/1",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ]
+          }
         },
         {
           "name": "PUT /api/admin/diskon/:id",
           "request": {
             "method": "PUT",
             "url": "{{base_url}}/api/admin/diskon/1",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token_admin}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }],
-            "body": { "mode": "raw", "raw": "{\n  \"persentase_diskon\": 25,\n  \"tanggal_akhir\": \"2026-09-15T23:59:59Z\"\n}" }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"persentase_diskon\": 25,\n  \"tanggal_akhir\": \"2026-09-15T23:59:59Z\"\n}"
+            }
           }
         },
         {
           "name": "DELETE /api/admin/diskon/:id",
-          "request": { "method": "DELETE", "url": "{{base_url}}/api/admin/diskon/1", "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/api/admin/diskon/1",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ]
+          }
         }
       ]
     },
     {
-      "name": "11. Admin — Reservasi & Check-in/out",
+      "name": "10. Admin — Reservasi & Check-in/out",
       "item": [
         {
           "name": "GET /api/admin/reservasi",
-          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/admin/reservasi?month=8&year=2026", "host": ["{{base_url}}"], "path": ["api", "admin", "reservasi"], "query": [{ "key": "month", "value": "8" }, { "key": "year", "value": "2026" }] }, "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/admin/reservasi?month=8&year=2026",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "reservasi"
+              ],
+              "query": [
+                {
+                  "key": "month",
+                  "value": "8"
+                },
+                {
+                  "key": "year",
+                  "value": "2026"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ]
+          }
         },
         {
           "name": "PATCH /api/admin/reservasi/:id/status",
           "request": {
             "method": "PATCH",
             "url": "{{base_url}}/api/admin/reservasi/1/status",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token_admin}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }],
-            "body": { "mode": "raw", "raw": "{\n  \"status\": \"disetujui\"\n}" }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"disetujui\"\n}"
+            }
           }
         },
         {
           "name": "POST /api/admin/reservasi/:id/check-in",
-          "request": { "method": "POST", "url": "{{base_url}}/api/admin/reservasi/1/check-in", "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/admin/reservasi/1/check-in",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ]
+          }
         },
         {
           "name": "POST /api/admin/reservasi/:id/check-out",
-          "request": { "method": "POST", "url": "{{base_url}}/api/admin/reservasi/1/check-out", "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/admin/reservasi/1/check-out",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ]
+          }
         }
       ]
     },
     {
-      "name": "12. Admin — Reports",
+      "name": "11. Admin — Reports",
       "item": [
         {
           "name": "GET /api/admin/reports/monthly",
-          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/admin/reports/monthly?month=8&year=2026", "host": ["{{base_url}}"], "path": ["api", "admin", "reports", "monthly"], "query": [{ "key": "month", "value": "8" }, { "key": "year", "value": "2026" }] }, "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/admin/reports/monthly?month=8&year=2026",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "reports",
+                "monthly"
+              ],
+              "query": [
+                {
+                  "key": "month",
+                  "value": "8"
+                },
+                {
+                  "key": "year",
+                  "value": "2026"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ]
+          }
         },
         {
           "name": "GET /api/admin/reports/income",
-          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/admin/reports/income?month=8&year=2026", "host": ["{{base_url}}"], "path": ["api", "admin", "reports", "income"], "query": [{ "key": "month", "value": "8" }, { "key": "year", "value": "2026" }] }, "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }, { "key": "x-maker-key", "value": "{{maker_key}}" }] }
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/admin/reports/income?month=8&year=2026",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "reports",
+                "income"
+              ],
+              "query": [
+                {
+                  "key": "month",
+                  "value": "8"
+                },
+                {
+                  "key": "year",
+                  "value": "2026"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ]
+          }
         }
       ]
     },
     {
-      "name": "13. Upload Media",
+      "name": "12. Upload Media",
       "item": [
         {
           "name": "POST /api/upload/image",
           "request": {
             "method": "POST",
             "url": "{{base_url}}/api/upload/image",
-            "header": [{ "key": "x-maker-key", "value": "{{maker_key}}" }],
-            "body": { "mode": "formdata", "formdata": [{ "key": "file", "type": "file", "src": "" }] }
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
           }
         },
         {
@@ -380,8 +850,17 @@
           "request": {
             "method": "POST",
             "url": "{{base_url}}/api/upload/spaces",
-            "header": [{ "key": "x-maker-key", "value": "{{maker_key}}" }],
-            "body": { "mode": "formdata", "formdata": [{ "key": "file", "type": "file", "src": "" }] }
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
           }
         },
         {
@@ -389,8 +868,17 @@
           "request": {
             "method": "POST",
             "url": "{{base_url}}/api/upload/members",
-            "header": [{ "key": "x-maker-key", "value": "{{maker_key}}" }],
-            "body": { "mode": "formdata", "formdata": [{ "key": "file", "type": "file", "src": "" }] }
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
           }
         }
       ]

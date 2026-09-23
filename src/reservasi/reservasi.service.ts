@@ -16,17 +16,22 @@ export class ReservasiService {
     private spacesService: SpacesService,
   ) {}
 
-  async create(dto: CreateReservasiDto, memberId: number, makerId: number) {
-    // 1. Validasi space
-    const ownerIds = await this.spacesService.getOwnerIdsByMaker(makerId);
-    const space = await this.prisma.space.findFirst({
-      where: { id: dto.id_space, id_owner: { in: ownerIds } },
+  async create(dto: CreateReservasiDto, memberId: number) {
+    // 1. Validasi tanggal dan waktu tidak boleh di masa lalu
+    this.spacesService.validasiTanggalDanWaktu(
+      dto.tanggal_reservasi,
+      dto.jam_mulai,
+    );
+
+    // 2. Validasi space
+    const space = await this.prisma.space.findUnique({
+      where: { id: dto.id_space },
     });
     if (!space) {
       throw new NotFoundException('Space tidak ditemukan!');
     }
 
-    // 2. Hitung jam selesai
+    // 3. Hitung jam selesai
     const jam_selesai = this.spacesService.hitungJamSelesai(
       dto.jam_mulai,
       dto.durasi_jam,
@@ -51,7 +56,6 @@ export class ReservasiService {
       diskon = await this.prisma.diskon.findFirst({
         where: {
           id: dto.id_diskon,
-          id_owner: { in: ownerIds },
           tanggal_awal: { lte: new Date() },
           tanggal_akhir: { gte: new Date() },
         },
@@ -63,7 +67,6 @@ export class ReservasiService {
       diskon = await this.prisma.diskon.findFirst({
         where: {
           nama_diskon: { equals: dto.kode_promo, mode: 'insensitive' },
-          id_owner: { in: ownerIds },
           tanggal_awal: { lte: new Date() },
           tanggal_akhir: { gte: new Date() },
         },
@@ -81,20 +84,14 @@ export class ReservasiService {
       : 0;
     const total_bayar = total_harga_awal - potongan_diskon;
 
-    // 6. Generate kode booking — count per owner agar unik dan terisolasi per maker
+    // 6. Generate kode booking
     const dateStr = dto.tanggal_reservasi.replace(/-/g, '');
     const countPerOwner = await this.prisma.reservasi.count({
       where: { id_owner: space.id_owner },
     });
     const kode_booking = `BOOK-${dateStr}-${String(countPerOwner + 1).padStart(4, '0')}`;
 
-    // 7. Dapatkan owner
-    const owner = await this.prisma.spaceOwner.findUnique({
-      where: { id: space.id_owner },
-      include: { user: { select: { maker: { select: { app_key: true } } } } },
-    });
-
-    // 8. Buat reservasi
+    // 7. Buat reservasi
     const reservasi = await this.prisma.reservasi.create({
       data: {
         kode_booking,
@@ -214,11 +211,7 @@ export class ReservasiService {
       where: { id },
       include: {
         member: true,
-        owner: {
-          include: {
-            user: { select: { maker: { select: { app_key: true } } } },
-          },
-        },
+        owner: true,
         detail: { include: { space: true, diskon: true } },
       },
     });
@@ -230,9 +223,8 @@ export class ReservasiService {
       throw new ForbiddenException('Akses ditolak!');
     }
 
-    const appKey = reservasi.owner?.user?.maker?.app_key || '';
-    // Format sesuai contoh soal: VERIFY-RESERVASI-{id}-{app_key}
-    const qrPayload = `VERIFY-RESERVASI-${reservasi.id}-${appKey}`;
+    // QR payload menggunakan kode_booking
+    const qrPayload = `VERIFY-RESERVASI-${reservasi.id}-${reservasi.kode_booking}`;
 
     return {
       e_ticket_number: `TICKET-${reservasi.owner.nama_coworking.replace(/\s+/g, '').substring(0, 6).toUpperCase()}-${this.formatDate(reservasi.tanggal_reservasi).replace(/-/g, '')}-${String(reservasi.id).padStart(4, '0')}`,

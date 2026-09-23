@@ -4,7 +4,6 @@ import { PassportModule } from '@nestjs/passport';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { MakerKeyGuard } from '../common/guards/maker-key.guard';
 
 @Module({
   imports: [
@@ -15,7 +14,7 @@ import { MakerKeyGuard } from '../common/guards/maker-key.guard';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, MakerKeyGuard],
+  providers: [AuthService, JwtStrategy],
   exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

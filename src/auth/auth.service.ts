@@ -23,9 +23,9 @@ export class AuthService {
     return `${baseUrl}/uploads/members/${foto}`;
   }
 
-  async registerMember(dto: RegisterMemberDto, makerId: number) {
-    const existing = await this.prisma.user.findFirst({
-      where: { username: dto.username, maker_id: makerId },
+  async registerMember(dto: RegisterMemberDto) {
+    const existing = await this.prisma.user.findUnique({
+      where: { username: dto.username },
     });
     if (existing) {
       throw new BadRequestException('Username sudah digunakan oleh akun lain!');
@@ -38,7 +38,6 @@ export class AuthService {
         username: dto.username,
         password: hashedPassword,
         role: 'member',
-        maker_id: makerId,
         member: {
           create: {
             nama_member: dto.nama_member,
@@ -71,9 +70,9 @@ export class AuthService {
     };
   }
 
-  async registerAdminSpace(dto: RegisterAdminSpaceDto, makerId: number) {
-    const existing = await this.prisma.user.findFirst({
-      where: { username: dto.username, maker_id: makerId },
+  async registerAdminSpace(dto: RegisterAdminSpaceDto) {
+    const existing = await this.prisma.user.findUnique({
+      where: { username: dto.username },
     });
     if (existing) {
       throw new BadRequestException('Username sudah digunakan oleh akun lain!');
@@ -86,7 +85,6 @@ export class AuthService {
         username: dto.username,
         password: hashedPassword,
         role: 'admin_space',
-        maker_id: makerId,
         spaceOwner: {
           create: {
             nama_coworking: dto.nama_coworking,
@@ -114,9 +112,9 @@ export class AuthService {
     };
   }
 
-  async login(dto: LoginDto, makerId: number) {
-    const user = await this.prisma.user.findFirst({
-      where: { username: dto.username, maker_id: makerId },
+  async login(dto: LoginDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { username: dto.username },
       include: { member: true, spaceOwner: true },
     });
 
@@ -135,7 +133,6 @@ export class AuthService {
       id: user.id,
       username: user.username,
       role: user.role,
-      maker_id: user.maker_id,
       member: user.member
         ? {
             id: user.member.id,

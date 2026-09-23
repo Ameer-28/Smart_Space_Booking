@@ -14,9 +14,6 @@ async function bootstrap() {
   // CORS
   app.enableCors();
 
-  // Global prefix (tidak pakai, karena kontrak API sudah pakai /api/...)
-  // app.setGlobalPrefix('api');
-
   // Serve static uploads
   const uploadsPath = join(process.cwd(), 'uploads');
   const subfolders = ['spaces', 'members', 'general'];
@@ -55,7 +52,6 @@ async function bootstrap() {
       { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
       'JWT',
     )
-    .addApiKey({ type: 'apiKey', in: 'header', name: 'x-maker-key' }, 'MakerKey')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

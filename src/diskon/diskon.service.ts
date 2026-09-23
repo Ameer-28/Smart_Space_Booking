@@ -9,13 +9,11 @@ import { PrismaService } from '../prisma/prisma.service';
 export class DiskonService {
   constructor(private prisma: PrismaService) {}
 
-  async getActive(makerId: number) {
-    const ownerIds = await this.getOwnerIdsByMaker(makerId);
+  async getActive() {
     const now = new Date();
 
     return this.prisma.diskon.findMany({
       where: {
-        id_owner: { in: ownerIds },
         tanggal_awal: { lte: now },
         tanggal_akhir: { gte: now },
       },
@@ -30,14 +28,12 @@ export class DiskonService {
     });
   }
 
-  async checkPromo(nama_diskon: string, makerId: number) {
-    const ownerIds = await this.getOwnerIdsByMaker(makerId);
+  async checkPromo(nama_diskon: string) {
     const now = new Date();
 
     const diskon = await this.prisma.diskon.findFirst({
       where: {
         nama_diskon: { equals: nama_diskon, mode: 'insensitive' },
-        id_owner: { in: ownerIds },
         tanggal_awal: { lte: now },
         tanggal_akhir: { gte: now },
       },
@@ -59,10 +55,9 @@ export class DiskonService {
     };
   }
 
-  async getById(id: number, makerId: number) {
-    const ownerIds = await this.getOwnerIdsByMaker(makerId);
-    const diskon = await this.prisma.diskon.findFirst({
-      where: { id, id_owner: { in: ownerIds } },
+  async getById(id: number) {
+    const diskon = await this.prisma.diskon.findUnique({
+      where: { id },
       select: {
         id: true,
         nama_diskon: true,
@@ -77,13 +72,5 @@ export class DiskonService {
     }
 
     return diskon;
-  }
-
-  private async getOwnerIdsByMaker(makerId: number): Promise<number[]> {
-    const owners = await this.prisma.spaceOwner.findMany({
-      where: { user: { maker_id: makerId } },
-      select: { id: true },
-    });
-    return owners.map((o) => o.id);
   }
 }

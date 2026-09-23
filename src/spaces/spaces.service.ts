@@ -28,12 +28,8 @@ export class SpacesService {
     ];
   }
 
-  async getAll(makerId: number, tipe?: string, search?: string) {
-    const ownerIds = await this.getOwnerIdsByMaker(makerId);
-
-    const where: any = {
-      id_owner: { in: ownerIds },
-    };
+  async getAll(tipe?: string, search?: string) {
+    const where: any = {};
 
     if (tipe) {
       where.tipe = tipe;
@@ -63,10 +59,9 @@ export class SpacesService {
     return spaces.map((s) => this.formatSpace(s));
   }
 
-  async getById(id: number, makerId: number) {
-    const ownerIds = await this.getOwnerIdsByMaker(makerId);
-    const space = await this.prisma.space.findFirst({
-      where: { id, id_owner: { in: ownerIds } },
+  async getById(id: number) {
+    const space = await this.prisma.space.findUnique({
+      where: { id },
       include: {
         owner: {
           select: {
@@ -86,16 +81,65 @@ export class SpacesService {
     return this.formatSpace(space);
   }
 
+  validasiTanggalDanWaktu(tanggal: string, jam_mulai: string): void {
+    if (!tanggal) {
+      throw new BadRequestException('Tanggal reservasi wajib diisi!');
+    }
+    if (!jam_mulai) {
+      throw new BadRequestException('Jam mulai reservasi wajib diisi!');
+    }
+
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(tanggal)) {
+      throw new BadRequestException('Format tanggal harus YYYY-MM-DD (contoh: 2026-08-30)!');
+    }
+
+    const timeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
+    if (!timeRegex.test(jam_mulai)) {
+      throw new BadRequestException('Format jam_mulai harus HH:mm (contoh: 09:00)!');
+    }
+
+    const [year, month, day] = tanggal.split('-').map(Number);
+    const [hour, minute] = jam_mulai.split(':').map(Number);
+
+    const targetDate = new Date(year, month - 1, day);
+    if (
+      targetDate.getFullYear() !== year ||
+      targetDate.getMonth() !== month - 1 ||
+      targetDate.getDate() !== day
+    ) {
+      throw new BadRequestException('Tanggal reservasi tidak valid!');
+    }
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    if (targetDate < today) {
+      throw new BadRequestException('Tanggal reservasi tidak boleh tanggal yang sudah lewat!');
+    }
+
+    if (targetDate.getTime() === today.getTime()) {
+      const targetDateTime = new Date(year, month - 1, day, hour, minute, 0, 0);
+      if (targetDateTime <= now) {
+        throw new BadRequestException('Jam mulai reservasi sudah lewat untuk hari ini!');
+      }
+    }
+  }
+
   async checkAvailability(
-    makerId: number,
     id_space: number,
     tanggal: string,
     jam_mulai: string,
     durasi_jam: number,
   ) {
-    const ownerIds = await this.getOwnerIdsByMaker(makerId);
-    const space = await this.prisma.space.findFirst({
-      where: { id: id_space, id_owner: { in: ownerIds } },
+    if (!durasi_jam || durasi_jam < 1) {
+      throw new BadRequestException('Durasi reservasi minimal 1 jam!');
+    }
+
+    this.validasiTanggalDanWaktu(tanggal, jam_mulai);
+
+    const space = await this.prisma.space.findUnique({
+      where: { id: id_space },
     });
 
     if (!space) {
@@ -165,14 +209,6 @@ export class SpacesService {
     const endHours = Math.floor(totalMinutes / 60) % 24;
     const endMinutes = totalMinutes % 60;
     return `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
-  }
-
-  async getOwnerIdsByMaker(makerId: number): Promise<number[]> {
-    const owners = await this.prisma.spaceOwner.findMany({
-      where: { user: { maker_id: makerId } },
-      select: { id: true },
-    });
-    return owners.map((o) => o.id);
   }
 
   private formatSpace(space: any) {

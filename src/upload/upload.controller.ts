@@ -3,16 +3,14 @@ import {
   Post,
   UseInterceptors,
   UploadedFile,
-  UseGuards,
   HttpStatus,
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
-import { ApiTags, ApiOperation, ApiConsumes, ApiSecurity } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiConsumes } from '@nestjs/swagger';
 import { UploadService } from './upload.service';
-import { MakerKeyGuard } from '../common/guards/maker-key.guard';
 
 const imageFileFilter = (req: any, file: any, cb: any) => {
   if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
@@ -32,8 +30,6 @@ const createStorage = (folder: string) =>
 
 @ApiTags('Upload Media')
 @Controller('api/upload')
-@UseGuards(MakerKeyGuard)
-@ApiSecurity('MakerKey')
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
 

@@ -8,14 +8,12 @@ import {
   Query,
   UseGuards,
   ParseIntPipe,
-  Request,
   HttpStatus,
 } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiBearerAuth,
-  ApiSecurity,
   ApiQuery,
 } from '@nestjs/swagger';
 import { ReservasiService } from './reservasi.service';
@@ -23,29 +21,25 @@ import { CreateReservasiDto } from './dto/create-reservasi.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
-import { MakerKeyGuard } from '../common/guards/maker-key.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @ApiTags('Reservasi Member')
 @Controller('api/reservasi')
 @ApiBearerAuth('JWT')
-@ApiSecurity('MakerKey')
 export class ReservasiController {
   constructor(private readonly reservasiService: ReservasiService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard, MakerKeyGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('member')
   @ApiOperation({ summary: 'Buat Pemesanan Space Baru (Member)' })
   async create(
     @Body() dto: CreateReservasiDto,
     @CurrentUser() user: any,
-    @Request() req: any,
   ) {
     const data = await this.reservasiService.create(
       dto,
       user.member.id,
-      user.maker_id,
     );
     return {
       status: true,
@@ -57,7 +51,7 @@ export class ReservasiController {
   }
 
   @Get('my')
-  @UseGuards(JwtAuthGuard, RolesGuard, MakerKeyGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('member')
   @ApiOperation({ summary: 'Lihat Status Semua Pemesanan Saya (Member)' })
   async getMy(@CurrentUser() user: any) {
@@ -72,7 +66,7 @@ export class ReservasiController {
   }
 
   @Get('my/history')
-  @UseGuards(JwtAuthGuard, RolesGuard, MakerKeyGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('member')
   @ApiOperation({ summary: 'Lihat Histori Pemesanan Berdasarkan Bulan & Tahun (Member)' })
   @ApiQuery({ name: 'month', required: false, type: Number })
@@ -97,7 +91,7 @@ export class ReservasiController {
   }
 
   @Get(':id/e-ticket')
-  @UseGuards(JwtAuthGuard, MakerKeyGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Cetak E-Ticket / Bukti Nota Digital Reservasi' })
   async getETicket(
     @Param('id', ParseIntPipe) id: number,
@@ -115,7 +109,7 @@ export class ReservasiController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard, MakerKeyGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Lihat Detail Reservasi Berdasarkan ID' })
   async getById(
     @Param('id', ParseIntPipe) id: number,
@@ -133,7 +127,7 @@ export class ReservasiController {
   }
 
   @Patch(':id/cancel')
-  @UseGuards(JwtAuthGuard, RolesGuard, MakerKeyGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('member')
   @ApiOperation({ summary: 'Batalkan Pemesanan (Member)' })
   async cancel(
