@@ -1,7 +1,7 @@
 # Test Script — Smart Space Booking API
 # Jalankan: powershell -ExecutionPolicy Bypass -File docs\test_api.ps1
 
-$BASE = "http://localhost:3000"
+$BASE = if ($env:BASE_URL) { $env:BASE_URL } else { "http://localhost:3001" }
 $ERRORS = @()
 $PASS = 0
 $FAIL = 0
